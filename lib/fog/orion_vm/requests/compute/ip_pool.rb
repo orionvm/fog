@@ -9,7 +9,6 @@ module Fog
           response = get('ip_pool', options)
 
           unless filters.empty? || response.body.empty?
-            puts filters
             filters.each do |filter, requirement|
               if response.body.all? { |ip| ip.keys.include?(filter.to_s) }
                 response.body = response.body.select { |ip| ip[filter.to_s] == requirement }

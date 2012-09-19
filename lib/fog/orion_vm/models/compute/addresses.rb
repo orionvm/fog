@@ -17,8 +17,6 @@ module Fog
         end
 
         def all(filters = {})
-          server = filters.fetch(:server, nil)
-
           self.filters = filters
 
           if server && !server.new_record?
@@ -27,9 +25,9 @@ module Fog
 
           load(addresses(filters))
 
-          # if server
-          #   replace(select {|address| address.server_id == server.id})
-          # end
+          if server
+            replace(select {|address| address.server_id == server.id})
+          end
 
           self
         end
@@ -41,11 +39,11 @@ module Fog
         end
 
         def new(attributes = {})
-          if server
-            super({ :server => server }.merge!(attributes))
-          else
-            super(attributes)
+          if server && !server.new_record?
+            attributes.merge!(:server => server)
+            attributes.merge!(:hostname => server.hostname) unless attributes.has_key?(:hostname)
           end
+          super(attributes)
         end
 
         private

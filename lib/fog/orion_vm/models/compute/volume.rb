@@ -6,12 +6,12 @@ module Fog
 
       class Volume < Fog::Model
         identity  :id, :aliases => 'name'
+        attribute :name, :type => :string
+        attribute :locked, :type => :boolean
+        attribute :image, :type => :string
+        attribute :size, :type => :integer
 
-        attribute :locked
-        attribute :image
-        attribute :size
-
-        attr_accessor :server
+        attribute :server
 
         def initialize(attributes = {})
           # assign server first to prevent race condition with new_record?
@@ -20,27 +20,31 @@ module Fog
         end
 
         def destroy
+          return false if locked?
           requires :id
 
           connection.drop_disk(id).body.eql?(true)
         end
 
         def save
-          # raise Fog::Errors::Error.new('Resaving an existing object will cause a failure') if identity
+          raise Fog::Errors::Error.new('Resaving an existing object will cause a failure') if identity
 
-          requires :size, :id
+          requires :size
 
           if attributes.has_key?(:image)
             # We're 'cloning' a base image
-            if connection.deploy_disk(id, image, size).body.eql?(true)
-              new_attributes = connection.disk_pool({:name => id}).body.first
+            if connection.deploy_disk(name, image, size).body.eql?(true)
+              new_attributes = connection.disk_pool({:name => name}).body.first
             end
           else
             # We're creating a clean image
-
-            if connection.create_disk(id, size).body.eql?(true)
-              new_attributes = connection.disk_pool({:name => id}).body.first
+            if connection.create_disk(name, size).body.eql?(true)
+              new_attributes = connection.disk_pool({:name => name}).body.first
             end
+          end
+
+          if @server
+            self.server = @server
           end
 
           merge_attributes(new_attributes)
@@ -49,7 +53,11 @@ module Fog
         end
 
         def ready?
-          locked.eql?(false)
+          !locked?
+        end
+
+        def locked?
+          locked.eql?(true)
         end
 
         # def server
@@ -57,20 +65,29 @@ module Fog
         #   connection.vm_pool()
         # end
 
-        # def server=(new_server)
-        #   if new_server
-        #     attach(new_server)
-        #   else
-        #     detach
-        #   end
-        # end
+        def server=(new_server)
+          if new_server
+            attach(new_server)
+          else
+            detach
+          end
+        end
 
-        def attach(server)
-          connection.attach_disk(server.id, self.id, 'xvda1')
+        def attach(new_server, read_only = false)
+          if new_record?
+            @server = new_server
+          else
+            @server = nil
+            self.server = new_server
+            connection.attach_disk(new_server.id, id, 'xvda1', read_only)
+          end
+        end
+
+        def next_device_offset
         end
 
         def detach
-          connection.detach_disk(server.id, self.id)
+          connection.detach_disk(server.id, id)
         end
 
       end

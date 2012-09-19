@@ -87,7 +87,8 @@ module Fog
           options = {
             :method => 'POST',
             :response_type => :boolean,
-            :query => body
+            :query => body,
+            :idempotent => true
           }.update(options || {})
 
           request(path, options)

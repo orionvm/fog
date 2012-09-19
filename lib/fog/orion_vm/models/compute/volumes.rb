@@ -7,6 +7,7 @@ module Fog
 
       class Volumes < Fog::Collection
         attribute :filters
+        attribute :server
 
         model Fog::Compute::OrionVM::Volume
 
@@ -17,13 +18,41 @@ module Fog
 
         def all(filters = {})
           self.filters = filters
+
+          # if server && !server.new_record?
+          #   self.filters.merge!(:vmid => server.id)
+          # end
+
           load(volumes(filters))
+
+          # connection.servers.select do |server|
+          #   server.disks.find do |disk|
+          #     disk['name'].eql?()
+          #   end
+          # end
+
+          if server
+            replace(select { |volume|
+                server.disks.map { |disk| disk['name'] }.include?(volume.id)
+              }
+            )
+          end
+
+          self
         end
 
         def get(volume_id)
           new volumes(:name => volume_id).first
         rescue Fog::Compute::OrionVM::NotFound
           nil
+        end
+
+        def new(attributes = {})
+          if server && !server.new_record?
+            attributes.merge!(:server => server)
+            attributes.merge!(:name => server.hostname) unless attributes.has_key?(:name)
+          end
+          super(attributes)
         end
 
         private

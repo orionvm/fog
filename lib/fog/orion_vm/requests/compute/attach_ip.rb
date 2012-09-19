@@ -2,7 +2,7 @@ module Fog
   module Compute
     class OrionVM
       class Real
-        
+
         # Allocates an IP Address object
         #
         # ==== Parameters
@@ -16,8 +16,10 @@ module Fog
           body = {:vmid => vm_id, :ip => ip_address}
 
           post('attach_ip', body, {:response_type => :boolean})
+        rescue Excon::Errors::Forbidden => e
+          nil
         end
-        
+
       end
     end
   end

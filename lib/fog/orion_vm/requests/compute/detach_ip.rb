@@ -2,7 +2,7 @@ module Fog
   module Compute
     class OrionVM
       class Real
-        
+
         # Detaches an IP Address from a VM
         #
         # ==== Parameters
@@ -15,15 +15,15 @@ module Fog
         def detach_ip(vm_id, ip_address)
           body = {:vmid => vm_id, :ip => ip_address}
 
-          post('detachip', body, {:response_type => :boolean})
+          post('detach_ip', body, {:response_type => :boolean})
         end
-        
+
       end
-      
+
       class Mock
         def detach_ip(vm_id, ip_address)
           response = Excon::Response.new
-          
+
           if vm_id == 1
             response.status = 200
             response.body = true
@@ -31,11 +31,11 @@ module Fog
             response.status = 404
             raise(Excon::Errors.status_error({:expects => 200}, response))
           end
-          
+
           response
         end
       end
-      
+
     end
   end
 end

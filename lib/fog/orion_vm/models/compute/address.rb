@@ -20,7 +20,7 @@ module Fog
         end
 
         def ready?
-          requires :id
+          !!identity
         end
 
         def server=(new_server)
@@ -56,8 +56,8 @@ module Fog
         end
 
         def disassociate
-          requires :server_id
           unless new_record?
+            requires :server_id
             connection.detach_ip(server_id, id)
           end
           @server = nil

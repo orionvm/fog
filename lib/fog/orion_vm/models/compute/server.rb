@@ -8,7 +8,7 @@ module Fog
         identity  :id,                  :aliases => 'vm_id'
 
         attribute :hostname
-        # attribute :volumes,             :aliases => 'disks', :type => :array
+        attribute :disks,               :type => :array
         attribute :created_at,          :aliases => 'creationtime', :type => :time
         # attribute :addresses,           :aliases => 'ips', :type => :array
         attribute :public_ip_address
@@ -22,7 +22,7 @@ module Fog
           1 => 'starting',
           2 => 'running',
           3 => 'stopping',
-          4 => 'rebooting',
+          4 => 'restarting',
           11 => 'failed-to-boot',
           13 => 'failed-to-shutdown'
         }.freeze
@@ -78,18 +78,12 @@ module Fog
         end
 
         def volumes
-          connection.volumes.all(:name => hostname)
+          connection.volumes(:server => self)
         end
 
         def addresses
-          connection.addresses.all(:server => self)
+          connection.addresses(:server => self)
         end
-#
-#         remove_method :addresses
-#         def addresses
-#           # connection.addresses.all(:vmid => id)
-#           connection.addresses.all(:server => self)
-#         end
 
         def save
           raise Fog::Errors::Error.new('Resaving an existing server will cause a failure') if identity

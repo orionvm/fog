@@ -12,51 +12,15 @@ Shindo.tests('Fog::Compute::OrionVM | server', ['orion_vm']) do
     returns(true) { @instance.destroy }
   end
 
-  tests("addresses") do
-
-    tests('attaching an address') do
-      @instance = service.servers.create(options)
-      address = service.addresses.create(options)
-      address.wait_for { address.ready? }
-      returns(nil) { address.server }
-      address.server = @instance
-      returns(@instance.id) { address.server_id }
-      returns(1) { @instance.addresses.size }
-      @instance.destroy
-      address.destroy
-    end
-
-    tests('creating an address') do
-      @instance = service.servers.create(options)
-      address = @instance.addresses.create(options)
-      returns(1) { @instance.addresses.size }
-      returns(address.id) { @instance.addresses.first.id }
-      returns(address.hostname) { @instance.hostname }
-
-      @instance.destroy
-      address.destroy
-    end
-
-    tests('removing an address') do
-      @instance = service.servers.create(options)
-      address = service.addresses.create(options)
-      address.server = @instance
-      returns(@instance.id) { address.server.id }
-      returns(nil) { address.disassociate }
-      returns(nil) { address.server }
-      returns(true) { address.destroy }
-      @instance.destroy
-    end
-  end
-
   tests('volumes') do
     @instance = service.servers.create(options)
 
     tests('create') do
       volume = @instance.volumes.create(size: 50)
-      tests('volume exists').returns(true) { !volume.new_record? }
-      returns(@instance.id) { volume.server.id }
-      puts @instance.inspect
+      tests('volume exists').returns(true) { volume.ready? }
+      #returns(@instance.id) { volume.server_id }
+      # puts @instance.inspect
+      @instance.reload
       returns(1) { @instance.disks.size }
       returns(1) { @instance.volumes.size }
     end

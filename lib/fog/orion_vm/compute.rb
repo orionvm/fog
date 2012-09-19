@@ -129,12 +129,13 @@ module Fog
           begin
             response = @connection.request(options)
           rescue Excon::Errors::HTTPStatusError => error
-            raise case error
-            when Excon::Errors::NotFound
-              Fog::Compute::OrionVM::NotFound.slurp(error)
-            else
-              error
-            end
+            raise error
+            # raise case error
+            # when Excon::Errors::NotFound
+            #   Fog::Compute::OrionVM::NotFound.slurp(error)
+            # else
+            #   error
+            # end
           end
 
           # We need to tell the request how to handle the response because

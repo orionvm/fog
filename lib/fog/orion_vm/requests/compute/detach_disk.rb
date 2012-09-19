@@ -15,7 +15,7 @@ module Fog
         def detach_disk(vm_id, disk_name)
           body = {:vmid => vm_id, :disk_name => disk_name}
 
-          post('detachdisk', body, {:response_type => :boolean})
+          post('detach_disk', body, {:response_type => :boolean})
         end
 
       end

@@ -17,6 +17,9 @@ module Fog
         attribute :vm_type
         attribute :licence
 
+        attr_writer   :private_key, :private_key_path, :public_key, :public_key_path, :username
+
+
         VM_STATES = {
           0 => 'stopped',
           1 => 'starting',
@@ -95,27 +98,54 @@ module Fog
 
           self.reload
 
-          # addresses.create(:hostname => hostname)
+        def private_key_path
+          @private_key_path ||= Fog.credentials[:private_key_path]
+          @private_key_path &&= File.expand_path(@private_key_path)
+        end
 
-          # connection.allocate_ip
-          # connection.deploy_disk(hostname, 'ubuntu-lucid', 50)
-          # connection.attach_disk()
+        def private_key
+          @private_key ||= private_key_path && File.read(private_key_path)
+        end
 
-          # setup
 
-          true
+        def public_key_path
+          @public_key_path ||= Fog.credentials[:public_key_path]
+          @public_key_path &&= File.expand_path(@public_key_path)
+        end
+
+        def public_key
+          @public_key ||= public_key_path && File.read(public_key_path)
         end
 
         # Assigns private keys etc
         def setup(credentials = {})
           requires :public_ip_address, :username
 
+          unless context['SSH_KEY']
+            stop
+            wait_for { stopped? }
+
+            self.context = {'SSH_KEY' => public_key}
+
+            start
+            wait_for { ready? }
+            wait_for { sshable? }
+          end
+
+          raise RuntimeError, "Cannot SSH into Instance" unless sshable?
+
+          require 'net/ssh'
+
+          commands = [
+            %{echo "#{Fog::JSON.encode(Fog::JSON.sanitize(attributes))}" >> ~/attributes.json}
+          ]
+
+          ssh(commands)
         end
 
         def username
-          @username ||= 'root'
+          @username || 'root'
         end
-
 
       end
 

@@ -80,6 +80,24 @@ module Fog
         def destroy
           requires :id
           connection.drop_vm(id).body.eql?(true)
+        rescue Excon::Errors::Forbidden
+          nil
+        end
+
+        def destroy_and_cleanup
+          requires :id
+          stop(true)
+
+          addresses.each do |address|
+            address.destroy
+          end
+
+          volumes.each do |volume|
+            volume.server = nil
+            volume.destroy
+          end
+
+          destroy
         end
 
         def context

@@ -22,8 +22,9 @@ module Fog
         def destroy
           return false if locked?
           requires :id
-
           connection.drop_disk(id).body.eql?(true)
+        rescue Excon::Errors::Forbidden
+          nil
         end
 
         def save

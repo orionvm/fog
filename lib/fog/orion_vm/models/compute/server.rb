@@ -82,6 +82,14 @@ module Fog
           connection.drop_vm(id).body.eql?(true)
         end
 
+        def context
+          connection.context(id).body
+        end
+
+        def context=(new_context = {})
+          connection.context(id, new_context).body
+        end
+
         def memory=(ram_in_megabytes)
           if new_record?
             attributes[:memory] = ram_in_megabytes
@@ -107,6 +115,8 @@ module Fog
           merge_attributes(vm_attributes)
 
           self.reload
+          true
+        end
 
         def private_key_path
           @private_key_path ||= Fog.credentials[:private_key_path]

@@ -2,7 +2,7 @@ module Fog
   module Compute
     class OrionVM
       class Real
-        
+
         # Deploys (starts) a VM
         #
         # ==== Parameters
@@ -15,21 +15,21 @@ module Fog
           options ||= {}
           post('deploy', {:vmid => vm_id}, options)
         end
-        
+
         # VM States:
         # Normal States
         # 0 -> Not running
         # 2 -> Running
-        # 
+        #
         # Transition States
         # 1 -> Being booted
         # 3 -> Shutting down
         # 4 -> Being rebooted
-        # 
+        #
         # Error States
         # 11 -> Failed to boot
         # 13 -> Failed to shut down
-                
+
       end
     end
   end

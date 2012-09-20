@@ -11,7 +11,7 @@ module Fog
         attribute :image, :type => :string
         attribute :size, :type => :integer
 
-        attribute :server
+        attribute :server_id
 
         def initialize(attributes = {})
           # assign server first to prevent race condition with new_record?
@@ -29,7 +29,7 @@ module Fog
         def save
           raise Fog::Errors::Error.new('Resaving an existing object will cause a failure') if identity
 
-          requires :size
+          requires :size, :name
 
           if attributes.has_key?(:image)
             # We're 'cloning' a base image
@@ -43,11 +43,13 @@ module Fog
             end
           end
 
+          merge_attributes(new_attributes)
+
+          wait_for { ready? }
+
           if @server
             self.server = @server
           end
-
-          merge_attributes(new_attributes)
 
           true
         end
@@ -60,10 +62,9 @@ module Fog
           locked.eql?(true)
         end
 
-        # def server
-        #   requires :server_id
-        #   connection.vm_pool()
-        # end
+        def server
+          connection.servers.get(server_id)
+        end
 
         def server=(new_server)
           if new_server
@@ -78,8 +79,8 @@ module Fog
             @server = new_server
           else
             @server = nil
-            self.server = new_server
-            connection.attach_disk(new_server.id, id, 'xvda1', read_only)
+            self.server_id = new_server.id
+            connection.attach_disk(server_id, id, 'xvda1', read_only)
           end
         end
 
@@ -87,11 +88,12 @@ module Fog
         end
 
         def detach
-          connection.detach_disk(server.id, id)
+          unless new_record?
+            connection.detach_disk(server_id, id).body.eql?(true)
+          end
         end
 
       end
-
     end
   end
 end

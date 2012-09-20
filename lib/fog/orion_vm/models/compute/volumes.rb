@@ -18,18 +18,7 @@ module Fog
 
         def all(filters = {})
           self.filters = filters
-
-          # if server && !server.new_record?
-          #   self.filters.merge!(:vmid => server.id)
-          # end
-
           load(volumes(filters))
-
-          # connection.servers.select do |server|
-          #   server.disks.find do |disk|
-          #     disk['name'].eql?()
-          #   end
-          # end
 
           if server
             replace(select { |volume|
@@ -50,6 +39,7 @@ module Fog
         def new(attributes = {})
           if server && !server.new_record?
             attributes.merge!(:server => server)
+            attributes.merge!(:server_id => server.id)
             attributes.merge!(:name => server.hostname) unless attributes.has_key?(:name)
           end
           super(attributes)
@@ -62,7 +52,6 @@ module Fog
         end
 
       end
-
     end
   end
 end

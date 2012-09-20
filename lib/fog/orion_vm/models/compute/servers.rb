@@ -16,17 +16,20 @@ module Fog
         end
 
         def bootstrap(new_attributes = {})
+          image = new_attributes.delete(:image) || 'ubuntu-oneiric'
+          size = new_attributes.delete(:size) || 50
+
           server = create(new_attributes)
+
+          address = server.addresses.create
+          address.wait_for { ready? }
+
+          volume = server.volumes.create(:image => image, :size => size)
+
+          server.setup
+
+          server.start
           server.wait_for { ready? }
-
-          server.addresses.create(:hostname => hostname)
-
-          # connection.allocate_ip
-          # connection.deploy_disk(hostname, 'ubuntu-lucid', 50)
-          # connection.attach_disk()
-
-
-          # server.setup(:key_data => [server.private_key])
           server
         end
 

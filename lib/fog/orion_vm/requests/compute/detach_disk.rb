@@ -13,7 +13,7 @@ module Fog
         # * response<~Excon::Response>:
         #   * body<~Boolean>
         def detach_disk(vm_id, disk_name)
-          body = {:vmid => vm_id, :disk_name => disk_name}
+          body = {:vmid => vm_id, :diskname => disk_name}
 
           post('detach_disk', body, {:response_type => :boolean})
         end

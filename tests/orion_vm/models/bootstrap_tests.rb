@@ -13,8 +13,16 @@ Shindo.tests('Fog::Compute::OrionVM | server bootstrapping', ['orion_vm']) do
     @instance.stop(true)
   end
 
-  tests('can destroy').returns(true) do
-    @instance.destroy
+  tests('can destroy and cleanup').returns(true) do
+    volume_name = @instance.volumes.first.name
+    address_id = @instance.addresses.first.id
+    instance_id = @instance.id
+
+    @instance.destroy_and_cleanup
+
+    returns(nil) { service.volumes.get(volume_name) }
+    returns(nil) { service.addresses.get(address_id) }
+    returns(nil) { service.servers.get(instance_id) }
   end
 
 end

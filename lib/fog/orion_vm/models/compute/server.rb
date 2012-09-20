@@ -89,11 +89,14 @@ module Fog
           stop(true)
 
           addresses.each do |address|
+            address.server = nil
             address.destroy
           end
 
           volumes.each do |volume|
+            puts "Destring volume: #{volume.id}"
             volume.server = nil
+            volume.wait_for { ready? }
             volume.destroy
           end
 

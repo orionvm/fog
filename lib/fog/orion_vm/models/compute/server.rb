@@ -46,21 +46,31 @@ module Fog
 
         def start(wait = false)
           requires :id
-          return true if ready?
-          connection.deploy(id).body.eql?(true)
+          return true if ready? || starting?
+          result = connection.deploy(id).body.eql?(true)
           wait_for(120) { ready? } if wait.eql?(true)
+          result
         end
 
         def running?
           state.eql?('running')
         end
 
+        def starting?
+          state.eql?('starting')
+        end
+
+        def stopping?
+          state.eql?('stopping')
+        end
+
         def stop(wait = false)
           requires :id
-          return true if stopped?
+          return true if stopped? || stopping?
 
-          connection.action(id, 'shutdown').body.eql?(true)
+          result = connection.action(id, 'shutdown').body.eql?(true)
           wait_for(120) { stopped? } if wait.eql?(true)
+          result
         end
 
         def stopped?

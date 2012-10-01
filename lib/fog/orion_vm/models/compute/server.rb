@@ -127,6 +127,10 @@ module Fog
           connection.addresses(:server => self)
         end
 
+        def networks
+          connection.networks(:server => self)
+        end
+
         def save
           raise Fog::Errors::Error.new('Resaving an existing server will cause a failure') if identity
 

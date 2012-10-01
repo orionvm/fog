@@ -32,7 +32,7 @@ module Fog
 
           if name && size_in_gigabytes
             response.status = 200
-            response.body = true
+            response.body = {:name => name, :size => size_in_gigabytes, :locked => false}
           else
             response.status = 404
             raise(Excon::Errors.status_error({:expects => 200}, response))

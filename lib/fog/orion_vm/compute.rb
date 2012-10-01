@@ -15,6 +15,9 @@ module Fog
       model       :server
       collection  :servers
 
+      model       :network
+      collection  :networks
+
       model       :volume
       collection  :volumes
 
@@ -22,6 +25,7 @@ module Fog
       collection  :addresses
 
       # Account requests
+      request :create_user
       request :user_details
 
       # IP Address requests
@@ -39,6 +43,14 @@ module Fog
       request :context
       request :action
       request :set_ram
+      request :create_vnc
+
+      # VLan requests
+      request :vlan_pool
+      request :allocate_vlan
+      request :drop_vlan
+      request :attach_vlan
+      request :detach_vlan
 
       # Disk requests
       request :disk_pool

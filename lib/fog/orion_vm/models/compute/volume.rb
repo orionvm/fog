@@ -67,9 +67,9 @@ module Fog
           connection.servers.get(server_id)
         end
 
-        def server=(new_server)
+        def server=(new_server, target = nil)
           if new_server
-            attach(new_server)
+            attach(new_server, target)
           else
             detach
           end

@@ -9,6 +9,22 @@ module Fog
         end
 
       end
+
+      class Mock
+        def drop_vm(vm_id, options = nil)
+          response = Excon::Response.new
+
+          if vm_id
+            response.status = 200
+            response.body = true
+          else
+            response.status = 404
+            raise(Excon::Errors.status_error({:expects => 200}, response))
+          end
+
+          response
+        end
+      end
     end
   end
 end

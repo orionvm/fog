@@ -44,12 +44,16 @@ module Fog
           state.eql?('running')
         end
 
-        def start(wait = false)
+        def start
           requires :id
           return true if ready? || starting?
-          result = connection.deploy(id).body.eql?(true)
-          wait_for(120) { ready? } if wait.eql?(true)
-          result
+          connection.deploy(id).body.eql?(true)
+        end
+
+        def start!
+          start.tap do
+            wait_for(120) { ready? }
+          end
         end
 
         def running?
@@ -67,10 +71,13 @@ module Fog
         def stop(wait = false)
           requires :id
           return true if stopped? || stopping?
+          connection.action(id, 'shutdown').body.eql?(true)
+        end
 
-          result = connection.action(id, 'shutdown').body.eql?(true)
-          wait_for(120) { stopped? } if wait.eql?(true)
-          result
+        def stop!
+          stop.tap do
+            wait_for(120) { stopped? }
+          end
         end
 
         def stopped?
@@ -86,7 +93,7 @@ module Fog
 
         def destroy_and_cleanup
           requires :id
-          stop(true)
+          stop!
 
           addresses.each do |address|
             address.server = nil

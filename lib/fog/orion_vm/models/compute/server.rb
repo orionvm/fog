@@ -138,6 +138,10 @@ module Fog
           connection.networks(:server => self)
         end
 
+        def open_vnc_session(token)
+          connection.create_vnc(id, token).body
+        end
+
         def save
           raise Fog::Errors::Error.new('Resaving an existing server will cause a failure') if identity
 

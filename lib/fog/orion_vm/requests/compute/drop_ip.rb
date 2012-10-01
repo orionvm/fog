@@ -2,7 +2,7 @@ module Fog
   module Compute
     class OrionVM
       class Real
-        
+
         # Drops (deletes) an IP Address.
         #
         # ==== Parameters
@@ -15,15 +15,15 @@ module Fog
           options ||= {}
           post('drop_ip', {:ip => ip_address}, {:response_type => :boolean}.merge(options))
         end
-        
+
       end
-      
+
       class Mock
-        
+
         def drop_ip(ip_address, options = nil)
           response = Excon::Response.new
-          
-          if ip_address == '123.234.123.234'
+
+          if %w(123.234.123.234 156.17.23.28).include?(ip_address)
             response.status = 200
             response.body = true
           else
@@ -32,7 +32,7 @@ module Fog
           end
           response
         end
-        
+
       end
     end
   end

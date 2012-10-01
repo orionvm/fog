@@ -20,6 +20,7 @@ module Fog
           options ||= {}
           raise ArgumentError, "Minimum RAM is 512MB" if ram_in_megabytes < 512
           raise ArgumentError, "Maximum RAM size is 16GB" if ram_in_megabytes > 16 * 1024
+          raise ArgumentError, "Hostname must be provided" if hostname.empty?
 
           body = {:hostname => hostname, :ram => "#{ram_in_megabytes}M"}
 
@@ -32,12 +33,11 @@ module Fog
 
       class Mock
         def vm_allocate(hostname, ram_in_megabytes = 1024, options = nil)
-          puts "hostname"
           response = Excon::Response.new
 
-          if hostname =~ /test\./ && ram_in_megabytes >= 512
+          if hostname =~ /^test|another/ && ram_in_megabytes >= 512
             response.status = 200
-            response.body = {'vmid' => 1}
+            response.body = {'vm_id' => 1337, state: 'running', :disks => [{:name => hostname, :size => 50, :image => 'ubuntu-oneiric'}]}
           else
             response.status = 404
             raise(Excon::Errors.status_error({:expects => 200}, response))

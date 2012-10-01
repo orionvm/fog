@@ -13,6 +13,9 @@ module Fog
         attribute :bandwidth_down,  :aliases => 'down', :type => :float
         attribute :hostname,        :aliases => 'friendly', :type => :string
 
+        # Only used during allocation
+        attribute :address
+
         def initialize(attributes = {})
           # assign server first to prevent race condition with new_record?
           self.server = attributes.delete(:server)
@@ -32,7 +35,7 @@ module Fog
         end
 
         def server
-          connection.servers.get(server_id)
+          server_id ? connection.servers.get(server_id) : nil
         end
 
         def destroy
@@ -45,7 +48,7 @@ module Fog
 
           requires :hostname
 
-          new_attributes = connection.allocate_ip(hostname).body
+          new_attributes = connection.allocate_ip(hostname, address).body
           merge_attributes(new_attributes)
 
           if @server

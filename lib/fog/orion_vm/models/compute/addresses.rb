@@ -33,12 +33,15 @@ module Fog
         end
 
         def get(ip_address)
-          new addresses(:ip => ip_address).first
+          if address = addresses(:ip => ip_address).first
+            new(address)
+          end
         rescue Fog::Compute::OrionVM::NotFound
           nil
         end
 
-        def new(attributes = {})
+        def new(attributes = nil)
+          attributes ||= {}
           if server && !server.new_record?
             attributes.merge!(:server => server)
             attributes.merge!(:hostname => server.hostname) unless attributes.has_key?(:hostname)

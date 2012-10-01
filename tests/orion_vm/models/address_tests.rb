@@ -4,13 +4,41 @@ Shindo.tests('Fog::Compute::OrionVM | addresses', ['orion_vm']) do
   options = { :hostname => "test.fog_server_#{Time.now.to_i.to_s}", :memory => 1024 }
 
   tests("addresses") do
+    tests('it does not have a server attached').returns(false) do
+      address = service.addresses.create(options)
+      !!address.server
+    end
+
+    tests('attaching a server').returns(true) do
+      @instance = service.servers.create(options)
+      @address = service.addresses.create(options)
+      @address.server=(@instance)
+      !!@address.server
+    end
+
+    # tests('counting attached servers').returns(1) do
+    #   instance = service.servers.create(options)
+    #   address = service.addresses.create(options)
+    #   address.server = instance
+    #   instance.addresses.size
+    # end
+
+    tests('no servers attached').returns(0) do
+      @instance = service.servers.create(options.merge(:hostname => 'another.server'))
+      @instance.addresses.size
+    end
+
+    after do
+      @instance.destroy
+      @address.destroy
+    end
 
     tests('attaching an address') do
       @instance = service.servers.create(options)
       address = service.addresses.create(options)
       address.wait_for { address.ready? }
       returns(nil) { address.server }
-      address.server = @instance
+      returns(true) { address.server = @instance }
       returns(@instance.id) { address.server_id }
       returns(1) { @instance.addresses.size }
       @instance.destroy
@@ -37,6 +65,22 @@ Shindo.tests('Fog::Compute::OrionVM | addresses', ['orion_vm']) do
       returns(nil) { address.server }
       returns(true) { address.destroy }
       @instance.destroy
+    end
+  end
+
+  tests('allocation') do
+    tests("can allocate with custom address").returns(true) do
+      !!service.addresses.create(:address => '123.234.123.234', :hostname => 'test.address')
+    end
+  end
+
+  tests('gets an address').returns(true) do
+    !!service.addresses.get('123.234.123.234')
+  end
+
+  tests('destroy') do
+    tests('can destroy address').returns(true) do
+      service.addresses.get('123.234.123.234').destroy
     end
   end
 

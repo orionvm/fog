@@ -69,6 +69,8 @@ if Fog.mock?
     :openstack_username               => 'openstack_username',
     :openstack_tenant                 => 'openstack_tenant',
     :openstack_auth_url               => 'http://openstack:35357/v2.0/tokens',
+    :orion_vm_username                => 'test',
+    :orion_vm_password                => 'test',
     :ovirt_url                        => 'http://ovirt:8080/api',
     :ovirt_username                   => 'admin@internal',
     :ovirt_password                   => '123123',

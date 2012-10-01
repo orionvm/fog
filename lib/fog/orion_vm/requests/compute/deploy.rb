@@ -31,6 +31,21 @@ module Fog
         # 13 -> Failed to shut down
 
       end
+
+      class Mock
+        def deploy(vm_id, options = nil)
+          response = Excon::Response.new
+
+          if vm_id
+            response.status = 200
+            response.body = true
+          else
+            response.status = 404
+            raise(Excon::Errors.status_error({:expects => 200}, response))
+          end
+          response
+        end
+      end
     end
   end
 end

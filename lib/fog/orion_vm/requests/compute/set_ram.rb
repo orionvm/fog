@@ -16,7 +16,7 @@ module Fog
       end
 
       class Mock
-        def vm_allocate(vm_id, ram_in_megabytes = 1024, options = nil)
+        def set_ram(vm_id, ram_in_megabytes = 1024, options = nil)
           response = Excon::Response.new
 
           if vm_id.to_i == 1 && ram_in_megabytes >= 512

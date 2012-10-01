@@ -32,7 +32,7 @@ module Fog
         def context(vm_id, new_context = {})
           response = Excon::Response.new
 
-          if vm_id == 1
+          if vm_id == 1337
             response.status = 200
             response.body = new_context
           else

@@ -75,13 +75,13 @@ module Fog
           end
         end
 
-        def attach(new_server, read_only = false)
+        def attach(new_server, read_only = false, target = 'xvda1')
           if new_record?
             @server = new_server
           else
             @server = nil
             self.server_id = new_server.id
-            connection.attach_disk(server_id, id, 'xvda1', read_only)
+            connection.attach_disk(server_id, id, target, read_only)
           end
         end
 

@@ -9,6 +9,7 @@ Shindo.tests('Fog::Compute::OrionVM | server', ['orion_vm']) do
     returns(false) { @instance.new_record? }
 
     tests("changing ram") do
+      pending if Fog.mocking?
       @instance.memory = 2048
       @instance.reload
       returns(2048) { @instance.memory }

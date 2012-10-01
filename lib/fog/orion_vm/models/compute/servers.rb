@@ -34,8 +34,11 @@ module Fog
         end
 
         def all(filters = {})
-          self.filters = filters
-          load(servers)
+          filters = self.filters.merge(filters)
+
+          load(servers(filters))
+
+          self
         end
 
         # Returns a single instance of server, or nil if it can't be found.

@@ -9,6 +9,7 @@ module Fog
 
         attribute :hostname
         attribute :disks,               :type => :array
+        attribute :vlans,               :type => :array
         attribute :created_at,          :aliases => 'creationtime', :type => :time
         # attribute :addresses,           :aliases => 'ips', :type => :array
         attribute :public_ip_address

@@ -18,16 +18,25 @@ module Fog
 
           response = get('vm_pool', options)
           response.body.map {|object| parse_date(:creationtime, object); object }
+          response.body.map {|object| parse_vlans(object); object }
 
           unless filters.empty? || response.body.empty?
             filters.each do |filter, requirement|
               if response.body.all? { |server| server.keys.include?(filter.to_s) }
-                response.body = response.body.select { |vm| vm[filter.to_s] == requirement }
+                response.body = response.body.select do |vm|
+                  Array(requirement).include?(vm[filter.to_s])
+                end
               end
             end
           end
 
           response
+        end
+
+        def parse_vlans(object)
+          object['vlans'] = object['vlans'].map { |v| {'id' => v} }
+        rescue
+          object
         end
 
       end
@@ -37,10 +46,12 @@ module Fog
           filters ||= {}
           options ||= {}
 
+          query_hostname = filters[:hostname]
+
           response = Excon::Response.new
           response.status = 200
           response.body = [{
-            "hostname"=> 'example.instance.com',
+            "hostname"=> (query_hostname || 'example.instance.com'),
             "vm_type"=> 'paravirt',
             "disks"=>[
               {"readonly"=> false,
@@ -54,7 +65,24 @@ module Fog
             "state"=> 2,
             "ram"=> 2048,
             "licence"=> nil,
-            "vm_id"=> 1
+            "vm_id"=> 1337
+          },
+          {
+            "hostname"=> 'another.instance',
+            "vm_type"=> 'paravirt',
+            "disks"=>[
+              {"readonly"=> false,
+                "name"=> 'example.instance.com',
+                "image"=> 'ubuntu-lucid',
+                "target"=> 'xvda1'
+              }
+            ],
+            "creationtime"=> Time.parse("1/1/2012"),
+            "ips"=>[],
+            "state"=> 2,
+            "ram"=> 2048,
+            "licence"=> nil,
+            "vm_id"=> 1338
           }]
 
           unless filters.empty? || response.body.empty?

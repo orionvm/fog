@@ -2,7 +2,7 @@ module Fog
   module Compute
     class OrionVM
       class Real
-        
+
         # Creates a new disk from an existing image, which can either be one
         # of the official OrionVM base images or an existing disk under your
         # account.
@@ -23,21 +23,21 @@ module Fog
         def deploy_disk(name, template, size_in_gigabytes = 20)
           raise ArgumentError, "Minimum disk size is 20GB" if size_in_gigabytes < 20.0
           raise ArgumentError, "Maximum disk size is 400GB" if size_in_gigabytes > 400.0
-          
+
           body = {:diskname => name, :size => "#{size_in_gigabytes}G", :image => template}
 
           post('deploy_disk', body, {:response_type => :boolean})
         end
-        
+
       end
-      
+
       class Mock
         def deploy_disk(name, template, size_in_gigabytes = 20)
           response = Excon::Response.new
-          
+
           if size_in_gigabytes >= 20
             response.status = 200
-            response.body = true
+            response.body = {:name => name, :size => size_in_gigabytes, :locked => false, image: template}
           else
             response.status = 403
             raise(Excon::Errors.status_error({:expects => 200}, response))
@@ -45,7 +45,7 @@ module Fog
           response
         end
       end
-      
+
     end
   end
 end

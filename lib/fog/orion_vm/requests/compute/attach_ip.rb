@@ -21,6 +21,20 @@ module Fog
         end
 
       end
+
+      class Mock
+        def attach_ip(vm_id, ip_address)
+          Excon::Response.new.tap do |response|
+            if vm_id && ip_address
+              response.status = 200
+              response.body = true
+            else
+              response.status = 404
+              raise(Excon::Errors.status_error({:expects => 200}, response))
+            end
+          end
+        end
+      end
     end
   end
 end

@@ -75,6 +75,10 @@ module Fog
           end
         end
 
+        def attach_server(new_server, target = nil)
+          attach(new_server, false, target)
+        end
+
         def attach(new_server, read_only = false, target = 'xvda1')
           if new_record?
             @server = new_server

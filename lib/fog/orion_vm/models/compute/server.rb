@@ -148,7 +148,7 @@ module Fog
 
           requires :memory, :hostname
 
-          vm_attributes = connection.vm_allocate(hostname, memory).body
+          vm_attributes = connection.vm_allocate(hostname, memory, vm_type).body
           merge_attributes(vm_attributes)
 
           self.reload

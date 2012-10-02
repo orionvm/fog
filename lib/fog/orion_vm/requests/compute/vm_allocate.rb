@@ -16,13 +16,13 @@ module Fog
         # * response<~Excon::Response>:
         #   * body<~Hash>
         #     * vm_id<~Integer>
-        def vm_allocate(hostname, ram_in_megabytes = 1024, options = nil)
+        def vm_allocate(hostname, ram_in_megabytes = 1024, vm_type = 'HVM', options = nil)
           options ||= {}
           raise ArgumentError, "Minimum RAM is 512MB" if ram_in_megabytes < 512
           raise ArgumentError, "Maximum RAM size is 16GB" if ram_in_megabytes > 16 * 1024
           raise ArgumentError, "Hostname must be provided" if hostname.empty?
 
-          body = {:hostname => hostname, :ram => "#{ram_in_megabytes}M"}
+          body = {:hostname => hostname, :ram => "#{ram_in_megabytes}M", vm_type: vm_type}
 
           response = post('vm_allocate', body, {:response_type => :integer}.merge(options))
           response.body = {'vm_id' => response.body}

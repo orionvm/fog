@@ -86,7 +86,7 @@ module Fog
                        promo_code = nil)
           response = Excon::Response.new
 
-          if username =~ /^test/
+          if username =~ /^connect|test/
             response.status = 200
             response.body = {"success"=>true, "error"=>"Success"}
           else

@@ -183,7 +183,7 @@ module Fog
         end
 
         def basic_auth
-          Base64.encode64([@orion_vm_username, @orion_vm_password].join(':')).chomp
+          Base64.strict_encode64([@orion_vm_username, @orion_vm_password].join(':')).chomp
         end
       end
 

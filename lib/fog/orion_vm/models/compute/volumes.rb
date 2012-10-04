@@ -36,7 +36,8 @@ module Fog
           nil
         end
 
-        def new(attributes = {})
+        def new(attributes = nil)
+          attributes ||= {}
           if server && !server.new_record?
             attributes.merge!(:server => server)
             attributes.merge!(:server_id => server.id)

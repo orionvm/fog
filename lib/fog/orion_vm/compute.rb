@@ -92,7 +92,11 @@ module Fog
           @api_url = options[:orion_vm_api_url] || Fog.credentials[:orion_vm_api_url] || Fog::OrionVM::API_V1_URL
           @orion_vm_username = options[:orion_vm_username] || Fog.credentials[:orion_vm_username]
           @orion_vm_password = options[:orion_vm_password] || Fog.credentials[:orion_vm_password]
-          @connection = Fog::Connection.new(@api_url, @persistent)
+          connection_options = {
+            retry_limit: 1
+          }
+
+          @connection = Fog::Connection.new(@api_url, @persistent, connection_options)
         end
 
         def post(path, body, options = {})
@@ -138,17 +142,17 @@ module Fog
 
           options[:headers]['Authorization'] = "Basic #{basic_auth}"
 
-          begin
+          # begin
             response = @connection.request(options)
-          rescue Excon::Errors::HTTPStatusError => error
-            raise error
+          # rescue Excon::Errors::HTTPStatusError => error
+            # raise error
             # raise case error
             # when Excon::Errors::NotFound
             #   Fog::Compute::OrionVM::NotFound.slurp(error)
             # else
             #   error
             # end
-          end
+          # end
 
           # We need to tell the request how to handle the response because
           # OrionVM doesn't always return true JSON.

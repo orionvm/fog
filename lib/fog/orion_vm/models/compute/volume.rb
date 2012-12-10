@@ -46,7 +46,7 @@ module Fog
 
           merge_attributes(new_attributes)
 
-          wait_for { ready? }
+          wait_for(30*60) { ready? }
 
           if @server
             self.server = @server

@@ -14,7 +14,7 @@ module Fog
         attribute :server_id
 
         def initialize(attributes = {})
-          # assign server first to prevent race condition with new_record?
+          # assign server first to prevent race condition with !persisted?
           self.server = attributes.delete(:server)
           super
         end
@@ -80,7 +80,7 @@ module Fog
         end
 
         def attach(new_server, read_only = false, target = 'xvda1')
-          if new_record?
+          if !persisted?
             @server = new_server
           else
             @server = nil
@@ -93,7 +93,7 @@ module Fog
         end
 
         def detach
-          unless new_record?
+          unless !persisted?
             connection.detach_disk(server_id, id).body.eql?(true)
           end
         end

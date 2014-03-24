@@ -1,5 +1,5 @@
 require 'fog/core/collection'
-require 'fog/orion_vm/models/compute/address'
+require 'fog/orionvm/models/compute/address'
 
 module Fog
   module Compute
@@ -19,7 +19,7 @@ module Fog
         def all(filters = {})
           self.filters = filters
 
-          if server && !server.new_record?
+          if server && server.persisted?
             self.filters.merge!(:vmid => server.id)
           end
 
@@ -42,7 +42,7 @@ module Fog
 
         def new(attributes = nil)
           attributes ||= {}
-          if server && !server.new_record?
+          if server && server.persisted?
             attributes.merge!(:server => server)
             attributes.merge!(:hostname => server.hostname) unless attributes.has_key?(:hostname)
           end
@@ -52,7 +52,7 @@ module Fog
         private
 
         def addresses(filters = self.filters)
-          connection.ip_pool(filters).body
+          service.ip_pool(filters).body
         end
 
       end

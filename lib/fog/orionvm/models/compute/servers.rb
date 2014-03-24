@@ -1,5 +1,5 @@
 require 'fog/core/collection'
-require 'fog/orion_vm/models/compute/server'
+require 'fog/orionvm/models/compute/server'
 
 module Fog
   module Compute
@@ -62,9 +62,9 @@ module Fog
 
         def get(server_id)
           if server_id.is_a?(Integer) && server_id.to_i == server_id
-            self.class.new(:connection => connection).all(:vm_id => server_id.to_i).first
+            self.class.new(:service => service).all(:vm_id => server_id.to_i).first
           elsif server_id.is_a?(String)
-            self.class.new(:connection => connection).all(:hostname => server_id).first
+            self.class.new(:service => service).all(:hostname => server_id).first
           end
         rescue Fog::Errors::NotFound
           nil
@@ -73,7 +73,7 @@ module Fog
         private
 
         def servers(filters = self.filters)
-          connection.vm_pool(filters).body
+          service.vm_pool(filters).body
         end
 
       end

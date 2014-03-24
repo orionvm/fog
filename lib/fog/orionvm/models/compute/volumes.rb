@@ -1,5 +1,5 @@
 require 'fog/core/collection'
-require 'fog/orion_vm/models/compute/volume'
+require 'fog/orionvm/models/compute/volume'
 
 module Fog
   module Compute
@@ -38,7 +38,7 @@ module Fog
 
         def new(attributes = nil)
           attributes ||= {}
-          if server && !server.new_record?
+          if server && server.persisted?
             attributes.merge!(:server => server)
             attributes.merge!(:server_id => server.id)
             attributes.merge!(:name => server.hostname) unless attributes.has_key?(:name)

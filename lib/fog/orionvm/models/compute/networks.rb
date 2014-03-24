@@ -1,5 +1,5 @@
 require 'fog/core/collection'
-require 'fog/orion_vm/models/compute/network'
+require 'fog/orionvm/models/compute/network'
 
 module Fog
   module Compute
@@ -19,7 +19,7 @@ module Fog
         def all(filters = {})
           self.filters = filters
 
-          if server && !server.new_record?
+          if server && server.persisted?
             self.filters.merge!(:vmids => [server.id])
           end
 
@@ -39,7 +39,7 @@ module Fog
         end
 
         def new(attributes = {})
-          if server && !server.new_record?
+          if server && server.persisted?
             attributes.merge!(:server => server)
           end
           super(attributes)

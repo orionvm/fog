@@ -33,7 +33,7 @@ module Fog
 
         def initialize(attributes = {})
           super
-          merge_attributes({:public_ip_address => attributes['ips'].first}) unless new_record?
+          merge_attributes({:public_ip_address => attributes['ips'].first}) unless !persisted?
         end
 
         def state
@@ -48,7 +48,7 @@ module Fog
         def start
           requires :id
           return true if ready? || starting?
-          connection.deploy(id).body.eql?(true)
+          service.deploy(id).body.eql?(true)
         end
 
         def start!
@@ -72,7 +72,7 @@ module Fog
         def stop(wait = false)
           requires :id
           return true if stopped? || stopping?
-          connection.action(id, 'shutdown').body.eql?(true)
+          service.action(id, 'shutdown').body.eql?(true)
         end
 
         def stop!
@@ -87,7 +87,7 @@ module Fog
 
         def destroy
           requires :id
-          connection.drop_vm(id).body.eql?(true)
+          service.drop_vm(id).body.eql?(true)
         rescue Excon::Errors::Forbidden
           nil
         end
@@ -112,35 +112,35 @@ module Fog
         end
 
         def context
-          connection.context(id).body
+          service.context(id).body
         end
 
         def context=(new_context = {})
-          connection.context(id, new_context).body
+          service.context(id, new_context).body
         end
 
         def memory=(ram_in_megabytes)
-          if new_record?
+          if !persisted?
             attributes[:memory] = ram_in_megabytes
-          elsif stopped? && connection.set_ram(id, ram_in_megabytes).body.eql?(true)
+          elsif stopped? && service.set_ram(id, ram_in_megabytes).body.eql?(true)
             attributes[:memory] = ram_in_megabytes
           end
         end
 
         def volumes
-          connection.volumes(:server => self)
+          service.volumes(:server => self)
         end
 
         def addresses
-          connection.addresses(:server => self)
+          service.addresses(:server => self)
         end
 
         def networks
-          connection.networks(:server => self)
+          service.networks(:server => self)
         end
 
         def open_vnc_session(token)
-          connection.create_vnc(id, token).body
+          service.create_vnc(id, token).body
         end
 
         def save
@@ -148,7 +148,7 @@ module Fog
 
           requires :memory, :hostname
 
-          vm_attributes = connection.vm_allocate(hostname, memory, vm_type).body
+          vm_attributes = service.vm_allocate(hostname, memory, vm_type).body
           merge_attributes(vm_attributes)
 
           self.reload

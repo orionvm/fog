@@ -1,5 +1,5 @@
-require 'fog/orion_vm'
-require 'fog/compute'
+require 'fog/orionvm/core'
+#require 'fog/compute'
 
 module Fog
   module Compute
@@ -9,8 +9,8 @@ module Fog
       secrets    :orion_vm_username, :orion_vm_password
       recognizes :orion_vm_api_url, :persistent
 
-      model_path 'fog/orion_vm/models/compute'
-      request_path 'fog/orion_vm/requests/compute'
+      model_path 'fog/orionvm/models/compute'
+      request_path 'fog/orionvm/requests/compute'
 
       model       :server
       collection  :servers
@@ -96,13 +96,13 @@ module Fog
             retry_limit: 1
           }
 
-          @connection = Fog::Connection.new(@api_url, @persistent, connection_options)
+          @connection = Fog::Core::Connection.new(@api_url, @persistent, connection_options)
         end
 
         def post(path, body, options = {})
           options = {
             :method => 'POST',
-            :response_type => :boolean,
+            #:response_type => :boolean,
             :query => body,
             :idempotent => false
           }.update(options || {})
@@ -112,7 +112,7 @@ module Fog
 
         def get(path, options = {})
           options = {
-            :response_type => :hash
+            #:response_type => :hash
           }.update(options || {})
 
           request(path, options)
@@ -126,8 +126,8 @@ module Fog
           options = {
             :expects => [200],
             :method => 'GET',
-            :path => [uri.path, command].join('/'),
-            :response_type => Hash
+            :path => [uri.path, command].join('/')
+            #:response_type => Hash
           }.merge(options)
 
           options[:query]   ||= {}

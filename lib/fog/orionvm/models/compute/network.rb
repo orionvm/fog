@@ -10,7 +10,7 @@ module Fog
         attribute :server_id, :type => :integer
 
         def initialize(attributes = {})
-          # assign server first to prevent race condition with new_record?
+          # assign server first to prevent race condition with !persisted?
           self.server = attributes.delete(:server)
           super
         end
@@ -54,7 +54,7 @@ module Fog
         end
 
         def detach
-          unless new_record?
+          unless !persisted?
             requires :server_id
             connection.detach_vlan(server_id, id)
           end
@@ -63,7 +63,7 @@ module Fog
         end
 
         def attach(new_server)
-          if new_record?
+          if !persisted?
             @server = new_server
           else
             @server = nil

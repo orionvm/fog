@@ -75,9 +75,10 @@ module Fog
           if !persisted?
             @server = new_server
           else
-            @server = nil
+            result = service.attach_ip(new_server.id, id)
+            @server = new_server
             self.server_id = new_server.id
-            service.attach_ip(server_id, id)
+            result
           end
         end
 

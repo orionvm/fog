@@ -22,7 +22,8 @@ module Fog
               address =~ /\b(?:\d{1,3}\.){3}\d{1,3}\b/
           end
 
-          post('allocate_ip', body, {:response_type => :hash})
+          temp = post('allocate_ip', body, {:response_type => :hash}); puts temp.inspect
+          temp
         end
       end
 
@@ -30,20 +31,33 @@ module Fog
 
         def allocate_ip(hostname, address=nil)
           response = Excon::Response.new
-
-          if address && address == '123.234.123.231'
-            response.status = 409
-            raise(Excon::Errors.status_error({:expects => 200}, response))
-          elsif address
-            response.status = 200
-            response.body = {'ip' => address}
-          elsif hostname == 'example.com' || hostname =~ /^test/
-            response.status = 200
-            response.body = {'ip' => '123.234.123.234'}
+          ip = { 'down' => 0, 'up' => 0, 'locked' => false, 'vmid' => 0 }
+          if address
+      	    if !address[/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/]
+              response.status = 400
+              STDERR.puts "address is invalid format", address
+              raise(Excon::Errors.status_error({:expects => 200}, response))
+            else
+              ip_exists = !!self.data[:ips][address]
+              if ip_exists
+                STDERR.puts "address already in use", address
+                response.status = 412
+                raise(Excon::Errors.status_error({:expects => 200}, response))
+              else
+                ip['ip'] = address
+              end
+            end
           else
-            response.status = 404
-            raise(Excon::Errors.status_error({:expects => 200}, response))
+            ip['ip'] = address = Array.new(4){rand(256)}.join('.')
           end
+
+          ip['friendly'] = hostname ? hostname : 'none'
+          self.data[:ips][address] = ip          
+          
+          STDERR.puts 'allocated an ip'
+          STDERR.puts ip
+          response.status = 200
+          response.body = { 'ip' => address }
           response
         end
 

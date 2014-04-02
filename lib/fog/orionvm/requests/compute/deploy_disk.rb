@@ -34,14 +34,28 @@ module Fog
       class Mock
         def deploy_disk(name, template, size_in_gigabytes = 20)
           response = Excon::Response.new
-
-          if size_in_gigabytes >= 20
-            response.status = 200
-            response.body = {:name => name, :size => size_in_gigabytes, :locked => false, image: template}
-          else
-            response.status = 403
+          raise ArgumentError, "Minimum disk size is 20GB" if size_in_gigabytes < 20.0
+          raise ArgumentError, "Maximum disk size is 400GB" if size_in_gigabytes > 400.0
+          
+          disk = self.data[:disks][name]
+          if !!disk || !name
+            response.status = 400
+            response.body = 'diskname is invalid'
+            if !!disk
+              STDERR.puts "disk already exists #{name}"
+            else
+              STDERR.puts 'disk name is required'
+            end
             raise(Excon::Errors.status_error({:expects => 200}, response))
           end
+                
+          response.status = 200
+          response.body = false
+          if template && template.length > 0
+            response.body = true
+            self.data[:disks][name] = { 'vm' => nil, 'image' => template, 'locked' => false, 'name' => name, 'size' => size_in_gigabytes}
+          end
+          
           response
         end
       end

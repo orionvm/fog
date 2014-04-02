@@ -25,15 +25,44 @@ module Fog
 
         def attach_disk(vm_id, name, mount_point, readonly = false)
           response = Excon::Response.new
-
-          if vm_id && name && mount_point
+          response.body = true
+          
+          vm_id = vm_id.to_i
+          
+          vm = self.data[:instances][vm_id]
+          disk = self.data[:disks][name]
+  
+          if !disk
+            response.body = "disk not found with name #{name}"
+          elsif disk['locked']
+            response.body = "disk is locked #{name}"
+          end
+          
+          if !vm
+            response.body = "no instance found with name id #{vm_id}"
+          elsif vm['state'] != 0
+            response.body = "instance not in appropriate state to attach a disk #{vm['state']}"
+          end
+          
+          if !mount_point || mount_point.length == 0
+            response.body = "invalid mount point #{mount_point}"
+          end
+  
+          
+          if response.body == true
+            disk['locked'] = true
+            disk['vm'] = vm_id
+            
+            reldisk = disk.clone
+            reldisk.delete('vm')
+            vm['disks'].push(reldisk)
+            
             response.status = 200
-            response.body = true
+            return response
           else
-            response.status = 404
+            response.status = 400
             raise(Excon::Errors.status_error({:expects => 200}, response))
           end
-          response
         end
 
       end

@@ -22,17 +22,32 @@ module Fog
 
         def action(vm_id, command)
           response = Excon::Response.new
-
-          if vm_id == 1
-            response.status = 200
-            response.body = true
+          errors = []
+          
+          vm = self.data[:instances][vm_id]
+          if vm
+            if command == "shutdown"
+              if vm['state'] == 2
+                vm['state'] = 0
+                response.status = 200
+                response.body = true
+              else
+                errors.push("vm state: #{vm['state']} is not appropriate for shutdown")
+              end
+            else
+              errors.push("unknown command: #{command}")
+            end
           else
-            response.status = 404
+            errors.push("Invalid vm_id or no vm found: #{vm_id}")
+          end
+          
+          if errors.count > 0
+            STDERR.puts errors
+            response.status = 400
             raise(Excon::Errors.status_error({:expects => 200}, response))
           end
           response
         end
-
       end
 
     end

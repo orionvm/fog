@@ -14,7 +14,7 @@ class OrionVM < Fog::Bin
       @@connections ||= Hash.new do |hash, key|
         hash[key] = case key
         when :compute
-          Fog::Logger.warning("OrionVM[:compute] is not recommended, use Compute[:orion_vm] for portability")
+          Fog::Logger.warning("OrionVM[:compute] is not recommended, use Compute[:orionvm] for portability")
           Fog::Compute.new(:provider => 'OrionVM')
         else
           raise ArgumentError, "Unrecognized service: #{service}"

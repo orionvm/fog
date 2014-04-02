@@ -1,9 +1,11 @@
 Shindo.tests('Fog::Compute::OrionVM | server', ['orion_vm']) do
 
   service = Fog::Compute::OrionVM.new
-  options = { :hostname => "test.fog_server_#{Time.now.to_i.to_s}", :memory => 1024 }
+  
 
   tests('volumes') do
+    
+    options = { :hostname => "test.fog_server2_#{Time.now.to_i.to_s}", :memory => 1024 }
     @instance = service.servers.create(options)
 
     tests('create') do

@@ -9,7 +9,6 @@ module Fog
 
         attribute :hostname
         attribute :disks,               :type => :array
-        attribute :vlans,               :type => :array
         attribute :created_at,          :aliases => 'creationtime', :type => :time
         # attribute :addresses,           :aliases => 'ips', :type => :array
         attribute :public_ip_address
@@ -34,6 +33,7 @@ module Fog
         def initialize(attributes = {})
           super
           merge_attributes({:public_ip_address => attributes['ips'].first}) unless !persisted?
+          #prepare_service_value(attributes)
         end
 
         def state
@@ -69,7 +69,11 @@ module Fog
           state.eql?('stopping')
         end
 
-        def stop(wait = false)
+        def stuck?
+          state.eql?("failed-to-boot") || state.eql?("failed-to-shutdown")
+        end
+
+        def stop
           requires :id
           return true if stopped? || stopping?
           service.action(id, 'shutdown').body.eql?(true)
@@ -87,9 +91,8 @@ module Fog
 
         def destroy
           requires :id
-          service.drop_vm(id).body.eql?(true)
-        rescue Excon::Errors::Forbidden
-          nil
+          stop!
+          service.drop_vm(id).body.eql?(true) rescue Excon::Errors::Forbidden nil
         end
 
         def destroy_and_cleanup
@@ -102,7 +105,6 @@ module Fog
           end
 
           volumes.each do |volume|
-            puts "Destring volume: #{volume.id}"
             volume.server = nil
             volume.wait_for { ready? }
             volume.destroy
@@ -140,14 +142,22 @@ module Fog
         end
 
         def open_vnc_session(token)
-          service.create_vnc(id, token).body
+          response = service.create_vnc(id, token).body
+          require 'uri'
+          uri = URI(service.api_url)
+          base = service.api_url
+          base["/api"] = ""
+          vnc_url = base + "/vnc/?autoconnect=1&host=#{uri.host}&port=443"
+          vnc_url += "&password=#{response['auth_token']}&name=#{hostname}"
+          vnc_url += "&path=vnc_connect/#{response['port']}&encrypt=true"
+          response['url'] = vnc_url
+          response
         end
 
         def save
           raise Fog::Errors::Error.new('Resaving an existing server will cause a failure') if identity
 
           requires :memory, :hostname
-
           vm_attributes = service.vm_allocate(hostname, memory, vm_type).body
           merge_attributes(vm_attributes)
 
@@ -193,11 +203,7 @@ module Fog
 
           require 'net/ssh'
 
-          commands = [
-            %{echo "#{Fog::JSON.encode(Fog::JSON.sanitize(attributes))}" >> ~/attributes.json}
-          ]
-
-          ssh(commands)
+          ssh("echo true")
         end
 
         def username

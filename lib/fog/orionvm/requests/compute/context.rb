@@ -32,13 +32,19 @@ module Fog
         def context(vm_id, new_context = {})
           response = Excon::Response.new
 
-          if vm_id == 1337
-            response.status = 200
-            response.body = new_context
-          else
-            response.status = 404
+          vm = self.data[:instances][vm_id]
+          if !vm
+            response.status = 400
+            STDERR.puts 'vm not found with id #{vm_id}'
             raise(Excon::Errors.status_error({:expects => 200}, response))
           end
+
+          context = self.data[:context][vm_id] || {}
+          context.merge!(new_context)
+          self.data[:context][vm_id] = context
+          
+          response.status = 200
+          response.body = context
           response
         end
       end

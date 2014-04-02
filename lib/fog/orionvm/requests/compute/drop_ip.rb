@@ -22,15 +22,21 @@ module Fog
 
         def drop_ip(ip_address, options = nil)
           response = Excon::Response.new
-
-          if %w(123.234.123.234 156.17.23.28).include?(ip_address)
-            response.status = 200
-            response.body = true
-          else
-            response.status = 404
-            raise(Excon::Errors.status_error({:expects => 200}, response))
+          
+          if ip_address
+            ip = self.data[:ips][ip_address]
+            if ip && !ip['locked']
+              self.data[:ips].delete(ip_address)
+              response.status = 200
+              response.body = true
+              return response
+            end
           end
-          response
+
+          puts 'invalid request to drop ip', ip
+          response.status = 400
+          raise(Excon::Errors.status_error({:expects => 200}, response))
+
         end
 
       end

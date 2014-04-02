@@ -28,22 +28,22 @@ module Fog
         end
 
         def server
-          connection.servers.get(server_id)
+          service.servers.get(server_id)
         end
 
         def destroy
           requires :id
-          connection.drop_vlan(id).body.eql?(true)
+          service.drop_vlan(id).body.eql?(true)
         end
 
         def servers
-          connection.servers.all(:vm_id => server_ids)
+          service.servers.all(:vm_id => server_ids)
         end
 
         def save
           raise Fog::Errors::Error.new('Resaving an existing object will cause a failure') if identity
 
-          vlan_id = connection.allocate_vlan.body
+          vlan_id = service.allocate_vlan.body
           merge_attributes({:id => vlan_id})
 
           if @server
@@ -56,7 +56,7 @@ module Fog
         def detach
           unless !persisted?
             requires :server_id
-            connection.detach_vlan(server_id, id)
+            service.detach_vlan(server_id, id)
           end
           @server = nil
           self.server_id = nil
@@ -68,7 +68,7 @@ module Fog
           else
             @server = nil
             self.server_id = new_server.id
-            connection.attach_vlan(server_id, id)
+            service.attach_vlan(server_id, id)
           end
         end
 

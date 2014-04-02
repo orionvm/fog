@@ -16,8 +16,8 @@ module Fog
         end
 
         def bootstrap(new_attributes = {})
-          image = new_attributes.delete(:image) || 'ubuntu-oneiric'
-          size = new_attributes.delete(:size) || 50
+          image = new_attributes.delete(:image) || 'ubuntu-precise'
+          size = new_attributes.delete(:size) || 30
 
           server = create(new_attributes)
 

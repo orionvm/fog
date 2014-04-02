@@ -23,12 +23,9 @@ module Fog
 
       class Mock
         def disk_pool(filters = nil, options = nil)
-          response = Excon::Response.new.tap do |response|
-            response.status = 200
-            response.body = [
-              {:name => "test.fog_server_1", :image => 'ubuntu-oneiric', :size => 50, :locked => false}
-            ]
-          end
+          response = Excon::Response.new
+          response.status = 200
+          response.body = self.data[:disks].values
 
           unless filters.empty? || response.body.empty?
             filters.each do |filter, requirement|

@@ -4,6 +4,15 @@ module Fog
   module Compute
     class OrionVM
 
+      class Numeric
+        Alph = ("a".."z").to_a
+        def alph
+          s, q = "", self
+          (q, r = (q - 1).divmod(26)) && s.prepend(Alph[r]) until q.zero?
+          s
+        end
+      end
+    
       class Volume < Fog::Model
         identity  :id, :aliases => 'name'
         attribute :name, :type => :string
@@ -11,7 +20,7 @@ module Fog
         attribute :image, :type => :string
         attribute :size, :type => :integer
 
-        attribute :server_id
+        attribute :server_id, :aliases => 'vm'
 
         def initialize(attributes = {})
           # assign server first to prevent race condition with !persisted?
@@ -22,7 +31,7 @@ module Fog
         def destroy
           return false if locked?
           requires :id
-          connection.drop_disk(id).body.eql?(true)
+          service.drop_disk(id).body.eql?(true)
         rescue Excon::Errors::Forbidden
           nil
         end
@@ -34,16 +43,20 @@ module Fog
 
           if attributes.has_key?(:image)
             # We're 'cloning' a base image
-            if connection.deploy_disk(name, image, size).body.eql?(true)
-              new_attributes = connection.disk_pool({:name => name}).body.first
+            if service.deploy_disk(name, image, size).body.eql?(true)
+              new_attributes = service.disk_pool({:name => name}).body.first
             end
           else
             # We're creating a clean image
-            if connection.create_disk(name, size).body.eql?(true)
-              new_attributes = connection.disk_pool({:name => name}).body.first
+            if service.create_disk(name, size).body.eql?(true)
+              new_attributes = service.disk_pool({:name => name}).body.first
             end
           end
 
+          if !new_attributes
+            return false
+          end
+          
           merge_attributes(new_attributes)
 
           wait_for(30*60) { ready? }
@@ -64,12 +77,12 @@ module Fog
         end
 
         def server
-          connection.servers.get(server_id)
+          service.servers.get(server_id)
         end
 
         def server=(new_server, target = nil)
           if new_server
-            attach(new_server, target)
+            attach(new_server, false, target)
           else
             detach
           end
@@ -79,13 +92,23 @@ module Fog
           attach(new_server, false, target)
         end
 
-        def attach(new_server, read_only = false, target = 'xvda1')
+        def attach(new_server, read_only = false, target = nil)
           if !persisted?
             @server = new_server
           else
             @server = nil
             self.server_id = new_server.id
-            connection.attach_disk(server_id, id, target, read_only)
+            
+            if !target
+              disk_count = new_server.disks.count
+              if new_server.vm_type == "HVM"
+                target = "hd" + (disk_count+1).alph
+              else
+                target = "xvda" + (disk_count+1).to_s
+              end
+            end
+            
+            service.attach_disk(server_id, id, target, read_only)
           end
         end
 
@@ -94,7 +117,7 @@ module Fog
 
         def detach
           unless !persisted?
-            connection.detach_disk(server_id, id).body.eql?(true)
+            service.detach_disk(server_id, id).body.eql?(true)
           end
         end
 

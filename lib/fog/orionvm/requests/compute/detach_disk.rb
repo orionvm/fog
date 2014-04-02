@@ -23,15 +23,38 @@ module Fog
       class Mock
         def detach_disk(vm_id, disk_name)
           response = Excon::Response.new
-
-          if vm_id == 1
+          response.body = true
+          
+          name = disk_name
+          vm_id = vm_id.to_i
+          
+          vm = self.data[:instances][vm_id]
+          disk = self.data[:disks][name]
+  
+          if !disk
+            response.body = "disk not found with name #{name}"
+          elsif !disk['locked'] || !disk['vm']
+            response.body = 'disk is not attached'
+          end
+          
+          if !vm
+            response.body = "no instance found with name id #{vm_id}"
+          elsif vm['state'] != 0
+            response.body = "instance not in appropriate state to detach a disk #{vm['state']}"
+          end
+          
+          if response.body == true
+            disk['locked'] = false
+            disk['vm'] = nil
+            
+            vm['disks'].delete_if { |d| d['name'] == disk_name}
+            
             response.status = 200
-            response.body = true
+            return response
           else
-            response.status = 403
+            response.status = 400
             raise(Excon::Errors.status_error({:expects => 200}, response))
           end
-          response
         end
       end
 

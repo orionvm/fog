@@ -1,5 +1,4 @@
 require 'fog/orionvm/core'
-#require 'fog/compute'
 
 module Fog
   module Compute
@@ -63,8 +62,18 @@ module Fog
       class Mock
         def self.data
           @data ||= Hash.new do |hash, key|
-            hash[key] = {}
+            hash[key] = {
+            	:instances => {},
+            	:disks => {},
+            	:ips => {},
+            	:accounts => {},
+            	:context => {}
+            }
           end
+        end
+
+        def data
+          self.class.data[@api_url + @orion_vm_username]
         end
 
         def self.reset
@@ -141,7 +150,10 @@ module Fog
           end
 
           options[:headers]['Authorization'] = "Basic #{basic_auth}"
-
+          
+          response_type = options.delete(:response_type).to_s.downcase.to_sym
+          
+          puts options[:query]
           # begin
             response = @connection.request(options)
           # rescue Excon::Errors::HTTPStatusError => error
@@ -157,7 +169,7 @@ module Fog
           # We need to tell the request how to handle the response because
           # OrionVM doesn't always return true JSON.
           unless response.body.empty?
-            response.body = case options[:response_type].to_s.downcase.to_sym
+            response.body = case response_type
             when :hash, :array
               MultiJson.decode(response.body)
             when :integer

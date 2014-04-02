@@ -23,17 +23,28 @@ module Fog
       end
 
       class Mock
+      
         def attach_ip(vm_id, ip_address)
-          Excon::Response.new.tap do |response|
-            if vm_id && ip_address
-              response.status = 200
-              response.body = true
-            else
-              response.status = 404
-              raise(Excon::Errors.status_error({:expects => 200}, response))
-            end
+          response = Excon::Response.new
+          ip = self.data[:ips][ip_address]
+          vm = self.data[:instances][vm_id]
+          if ip && vm && !ip['locked']
+            ip['locked'] = true
+            ip['vmid'] = vm_id
+            vm['ips'].push(ip_address)
+            
+            STDERR.puts 'attaching IP', ip
+            response.status = 200
+            response.body = true
+            return response
           end
+
+          response.status = 400
+          response.body = 'Invalid input: HTTP 400: Bad Request {Reason}'
+          STDERR.puts ip.inspect, vm.inspect
+          raise(Excon::Errors.status_error({:expects => 200}, response))
         end
+        
       end
     end
   end

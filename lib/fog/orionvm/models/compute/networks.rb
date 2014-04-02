@@ -48,7 +48,7 @@ module Fog
         private
 
         def networks(filters = self.filters)
-          connection.vlan_pool(filters).body
+          service.vlan_pool(filters).body
         end
 
       end

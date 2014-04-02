@@ -32,16 +32,36 @@ module Fog
       end
 
       class Mock
-        def vm_allocate(hostname, ram_in_megabytes = 1024, options = nil)
+        def vm_allocate(hostname, ram_in_megabytes = 1024, vm_type = 'HVM', options = nil)
+          raise ArgumentError, "Minimum RAM is 512MB" if ram_in_megabytes < 512
+          raise ArgumentError, "Maximum RAM size is 16GB" if ram_in_megabytes > 16 * 1024
+          raise ArgumentError, "Hostname must be provided" if hostname.empty?
+          
           response = Excon::Response.new
-
-          if hostname =~ /^test|another/ && ram_in_megabytes >= 512
-            response.status = 200
-            response.body = {'vm_id' => 1337, state: 'running', :disks => [{:name => hostname, :size => 50, :image => 'ubuntu-oneiric'}]}
-          else
-            response.status = 404
+          instances = self.data[:instances]
+          test = instances.select {|id, vm| vm['hostname'] == hostname}
+          if test.count > 0
+            response.status = 412
             raise(Excon::Errors.status_error({:expects => 200}, response))
           end
+          
+          id = self.data[:instances].count + 1
+          vm = {
+            'disks' => [],
+            'hostname' => hostname,
+            'ram' => ram_in_megabytes,
+            'ips' => [],
+            'license' => nil,
+            'state' => 0,
+            'vm_id' => id,
+            'vm_type' => vm_type
+          }
+          self.data[:instances][id] = vm
+          
+          STDERR.puts 'allocated a vm'
+          STDERR.puts vm
+          response.status = 200
+          response.body = { 'vm_id' => id }
           response
         end
       end

@@ -8,7 +8,7 @@ Shindo.tests('Fog::Compute::OrionVM | server bootstrapping', ['orion_vm']) do
     returns(true) { @instance.ready? }
 
     tests("can shutdown").returns(true) do
-      @instance.stop(true)
+      @instance.stop!
     end
 
     tests('can destroy and cleanup').returns(true) do
@@ -18,8 +18,11 @@ Shindo.tests('Fog::Compute::OrionVM | server bootstrapping', ['orion_vm']) do
 
       @instance.destroy_and_cleanup
 
+      puts 'volume should be nil'
       returns(nil) { service.volumes.get(volume_name) }
+      puts 'address should be nil'
       returns(nil) { service.addresses.get(address_id) }
+      puts 'server should be nil'
       returns(nil) { service.servers.get(instance_id) }
     end
   end

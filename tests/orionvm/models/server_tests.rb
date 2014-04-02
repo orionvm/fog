@@ -6,7 +6,7 @@ Shindo.tests('Fog::Compute::OrionVM | server', ['orion_vm']) do
   tests("instance lifecycle success") do
     @instance = service.servers.new(options)
     @instance.save
-    returns(false) { @instance.new_record? }
+    returns(false) { !@instance.persisted? }
 
     tests("changing ram") do
       pending if Fog.mocking?
@@ -26,7 +26,7 @@ Shindo.tests('Fog::Compute::OrionVM | server', ['orion_vm']) do
     tests('#start').succeeds do
       @instance.start
       @instance.reload
-      returns('starting') { @instance.state }
+      returns(true) { @instance.state == 'starting' || @instance.state == 'running' }
       @instance.wait_for { ready? }
       @instance.ready?
     end

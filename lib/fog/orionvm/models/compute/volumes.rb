@@ -31,9 +31,9 @@ module Fog
         end
 
         def get(volume_id)
-          new volumes(:name => volume_id).first
-        rescue Fog::Compute::OrionVM::NotFound
-          nil
+          self.class.new(:service => service).all(:name => volume_id).first
+            rescue Fog::Compute::OrionVM::NotFound
+              nil
         end
 
         def new(attributes = nil)
@@ -49,7 +49,7 @@ module Fog
         private
 
         def volumes(filters = self.filters)
-          connection.disk_pool(filters).body
+          service.disk_pool(filters).body
         end
 
       end

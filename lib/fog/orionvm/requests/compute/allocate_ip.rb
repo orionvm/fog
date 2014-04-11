@@ -22,8 +22,7 @@ module Fog
               address =~ /\b(?:\d{1,3}\.){3}\d{1,3}\b/
           end
 
-          temp = post('allocate_ip', body, {:response_type => :hash}); puts temp.inspect
-          temp
+          post('allocate_ip', body, {:response_type => :hash})
         end
       end
 
@@ -35,12 +34,12 @@ module Fog
           if address
       	    if !address[/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/]
               response.status = 400
-              STDERR.puts "address is invalid format", address
+              Fog::Logger.warning "address is invalid format: #{address}"
               raise(Excon::Errors.status_error({:expects => 200}, response))
             else
               ip_exists = !!self.data[:ips][address]
               if ip_exists
-                STDERR.puts "address already in use", address
+                Fog::Logger.warning "address already in use: #{address}"
                 response.status = 412
                 raise(Excon::Errors.status_error({:expects => 200}, response))
               else
@@ -54,8 +53,7 @@ module Fog
           ip['friendly'] = hostname ? hostname : 'none'
           self.data[:ips][address] = ip          
           
-          STDERR.puts 'allocated an ip'
-          STDERR.puts ip
+          Fog::Logger.debug "allocated an ip #{ip.inspect}"
           response.status = 200
           response.body = { 'ip' => address }
           response

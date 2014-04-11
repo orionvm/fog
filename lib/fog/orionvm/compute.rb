@@ -14,9 +14,6 @@ module Fog
       model       :server
       collection  :servers
 
-      model       :network
-      collection  :networks
-
       model       :volume
       collection  :volumes
 
@@ -43,13 +40,6 @@ module Fog
       request :action
       request :set_ram
       request :create_vnc
-
-      # VLan requests
-      request :vlan_pool
-      request :allocate_vlan
-      request :drop_vlan
-      request :attach_vlan
-      request :detach_vlan
 
       # Disk requests
       request :disk_pool
@@ -153,7 +143,7 @@ module Fog
           
           response_type = options.delete(:response_type).to_s.downcase.to_sym
           
-          puts options[:query]
+          Fog::Logger.debug(command + " " + options[:query].to_s)
           # begin
             response = @connection.request(options)
           # rescue Excon::Errors::HTTPStatusError => error

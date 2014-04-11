@@ -11,6 +11,7 @@ module Fog
         #   Must be entered in whole units, in Gigabytes.
         #   The minimum size is: 0.5GB
         #   The maximum size is: 16GB
+        # * vm_type<~String> - virtualization method ("paravirt"|"HVM")
         #
         # ==== Returns
         # * response<~Excon::Response>:
@@ -58,8 +59,8 @@ module Fog
           }
           self.data[:instances][id] = vm
           
-          STDERR.puts 'allocated a vm'
-          STDERR.puts vm
+          Fog::Logger.debug 'allocated a vm'
+          Fog::Logger.debug vm
           response.status = 200
           response.body = { 'vm_id' => id }
           response

@@ -92,7 +92,11 @@ module Fog
         def destroy
           requires :id
           stop!
-          service.drop_vm(id).body.eql?(true) rescue Excon::Errors::Forbidden nil
+          begin
+            service.drop_vm(id).body.eql?(true)
+          rescue Excon::Errors::Forbidden 
+            nil
+          end
         end
 
         def destroy_and_cleanup

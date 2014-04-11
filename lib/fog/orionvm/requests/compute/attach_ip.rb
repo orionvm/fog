@@ -33,7 +33,7 @@ module Fog
             ip['vmid'] = vm_id
             vm['ips'].push(ip_address)
             
-            STDERR.puts 'attaching IP', ip
+            Fog::Logger.debug "attaching IP #{ip_address}" 
             response.status = 200
             response.body = true
             return response
@@ -41,7 +41,7 @@ module Fog
 
           response.status = 400
           response.body = 'Invalid input: HTTP 400: Bad Request {Reason}'
-          STDERR.puts ip.inspect, vm.inspect
+          Fog::Logger.debug "ip failed to attach " + ip.inspect + vm.inspect
           raise(Excon::Errors.status_error({:expects => 200}, response))
         end
         

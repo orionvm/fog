@@ -30,6 +30,22 @@ Shindo.tests('Fog::Compute::OrionVM | server', ['orion_vm']) do
       volume.wait_for { volume.ready? }
       volume.destroy
     end
+    
+    tests('create, attach, detach, destroy') do
+      volume = service.volumes.create(size: 30, image: 'ubuntu-precise', name: 'fogtest')
+      tests("volume is ready").returns(true) { volume.ready? }
+      tests("volume starts of detached").returns(nil) { volume.server }
+
+      volume.server = @instance
+      tests("volume is attached").returns(@instance.id) { volume.server.id }
+      
+      volume.server = nil
+      @instance.reload
+      tests("volume is detached").returns(0) { @instance.volumes.count }
+      volume.destroy
+      tests("volume is destroyed").returns(nil) { service.volumes.get 'fogtest' }
+      
+    end
 
     @instance.destroy
   end

@@ -15,7 +15,7 @@ module Fog
         #
         # AWS.servers.new
         #
-        # ==== Returns
+        # dddd==== Returns
         #
         # Returns the details of the new server
         #

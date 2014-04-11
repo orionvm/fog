@@ -42,7 +42,7 @@ module Fog
           end
           
           if errors.count > 0
-            STDERR.puts errors
+            Fog::Logger.warning errors.to_s
             response.status = 400
             raise(Excon::Errors.status_error({:expects => 200}, response))
           end

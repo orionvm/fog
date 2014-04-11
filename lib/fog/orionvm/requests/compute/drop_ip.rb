@@ -33,7 +33,7 @@ module Fog
             end
           end
 
-          puts 'invalid request to drop ip', ip
+          Fog::Logger.warning 'invalid request to drop ip' + ip
           response.status = 400
           raise(Excon::Errors.status_error({:expects => 200}, response))
 

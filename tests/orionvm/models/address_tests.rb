@@ -6,7 +6,6 @@ Shindo.tests('Fog::Compute::OrionVM | addresses', ['orionvm']) do
   address_options = { :hostname => "test.fog_address_#{Time.now.to_i.to_s}" }
 
   def cleanup
-    puts "running after test logic"
     if @instance
       @instance.destroy
       @instance = nil
@@ -30,7 +29,6 @@ Shindo.tests('Fog::Compute::OrionVM | addresses', ['orionvm']) do
 
     tests('attaching a server').returns(true) do
       @instance = service.servers.create(server_options)
-      puts 'instance created: ', @instance
       @address = service.addresses.create(address_options)
       temp = @address.server=(@instance)
       !!@address.server
@@ -57,7 +55,6 @@ Shindo.tests('Fog::Compute::OrionVM | addresses', ['orionvm']) do
       @address = service.addresses.create(address_options)
       @address.wait_for { ready? }
       returns(nil) { @address.server }
-      puts 'heres the server', @instance
       attach = (@address.server = @instance)
       returns(true) { attach.kind_of? Fog::Compute::OrionVM::Server }
       returns(@instance.id) { @address.server_id }
@@ -78,9 +75,7 @@ Shindo.tests('Fog::Compute::OrionVM | addresses', ['orionvm']) do
 
     tests('removing an address') do
       server = service.servers.create(server_options)
-      puts server.inspect
       ip = service.addresses.create(address_options)
-      puts ip.inspect
       ip.server = server
       returns(server.id) { ip.server.id }
       returns(nil) { ip.disassociate }
@@ -90,21 +85,34 @@ Shindo.tests('Fog::Compute::OrionVM | addresses', ['orionvm']) do
     end
   end
 
-  
+  address = '123.234.123.234'
 
   tests('allocation') do
-    tests("can allocate with custom address").returns(true) do
-      !!service.addresses.create(:address => '123.234.123.234', :hostname => 'test.address')
+    tests("can allocate with custom address") do
+      if Fog.mocking?
+        tests('mock version').returns(true) do 
+          !!service.addresses.create(:address => address, :hostname => 'test.address')
+        end
+      else
+        tests('non mock version').raises(Excon::Errors::Conflict) do
+          service.addresses.create(:address => address, :hostname => 'test.address')
+        end
+        tests('not mocked, get ip without address').returns(true) do 
+          result = service.addresses.create(:hostname => 'test.address')
+          address = result.id
+          !!result
+        end
+      end
     end
   end
 
   tests('gets an address').returns(true) do
-    !!service.addresses.get('123.234.123.234')
+    !!service.addresses.get(address)
   end
 
   tests('destroy') do
     tests('can destroy address').returns(true) do
-      service.addresses.get('123.234.123.234').destroy
+      service.addresses.get(address).destroy
     end
   end
 

@@ -23,7 +23,7 @@ module Fog
           if ram_in_megabytes < 512 || ram_in_megabytes > 65535
             response.status = 400
             response.body = false
-            STDERR.puts 'invalid RAM amount'
+            Fog::Logger.warning 'invalid RAM amount'
             raise(Excon::Errors.status_error({:expects => 200}, response))
           end
           
@@ -31,7 +31,7 @@ module Fog
           if !vm
             response.status = 400
             response.body = false
-            STDERR.puts 'vmid not found: #{vm_id}'
+            Fog::Logger.warning 'vmid not found: #{vm_id}'
             raise(Excon::Errors.status_error({:expects => 200}, response))
           else
             vm['ram'] = ram_in_megabytes

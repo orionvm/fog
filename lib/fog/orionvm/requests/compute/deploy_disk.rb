@@ -42,9 +42,9 @@ module Fog
             response.status = 400
             response.body = 'diskname is invalid'
             if !!disk
-              STDERR.puts "disk already exists #{name}"
+              Fog::Logger.warning "disk already exists #{name}"
             else
-              STDERR.puts 'disk name is required'
+              Fog::Logger.warning 'disk name is required'
             end
             raise(Excon::Errors.status_error({:expects => 200}, response))
           end

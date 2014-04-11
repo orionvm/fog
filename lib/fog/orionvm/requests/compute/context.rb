@@ -35,7 +35,7 @@ module Fog
           vm = self.data[:instances][vm_id]
           if !vm
             response.status = 400
-            STDERR.puts 'vm not found with id #{vm_id}'
+            Fog::Logger.warning 'vm not found with id #{vm_id}'
             raise(Excon::Errors.status_error({:expects => 200}, response))
           end
 

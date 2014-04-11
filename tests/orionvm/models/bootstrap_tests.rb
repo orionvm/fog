@@ -18,12 +18,9 @@ Shindo.tests('Fog::Compute::OrionVM | server bootstrapping', ['orion_vm']) do
 
       @instance.destroy_and_cleanup
 
-      puts 'volume should be nil'
-      returns(nil) { service.volumes.get(volume_name) }
-      puts 'address should be nil'
-      returns(nil) { service.addresses.get(address_id) }
-      puts 'server should be nil'
-      returns(nil) { service.servers.get(instance_id) }
+      tests('volume should be nil').returns(nil) { service.volumes.get(volume_name) }
+      tests('address should be nil').returns(nil) { service.addresses.get(address_id) }
+      tests('server should be nil').returns(nil) { service.servers.get(instance_id) }
     end
   end
 

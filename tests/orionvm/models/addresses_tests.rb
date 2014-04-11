@@ -1,4 +1,4 @@
-Shindo.tests("Fog::Compute[:orion_vm] | address", ['orionvm']) do
+Shindo.tests("Fog::Compute[:orion_vm] | addresses", ['orionvm']) do
 
   params = {hostname: 'test.instance'}
   service = Fog::Compute::OrionVM.new
@@ -6,8 +6,8 @@ Shindo.tests("Fog::Compute[:orion_vm] | address", ['orionvm']) do
   model_tests(service.addresses, params, true) do
 
     @server = service.servers.create(hostname: 'test.instance', memory: 1024)
-    @server.start!
-    @server.wait_for { ready? }
+    #?@server.start!
+    #@server.wait_for { ready? }
 
     tests('#server=').succeeds do
       @instance.server = @server

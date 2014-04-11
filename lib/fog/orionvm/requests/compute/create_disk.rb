@@ -33,16 +33,15 @@ module Fog
           size = size_in_gigabytes.to_i
           raise ArgumentError, "Minimum disk size is 20GB" if size < 20.0
           raise ArgumentError, "Maximum disk size is 2048GB" if size > 2048.0
-          puts 'DISKS!'
-          puts self.data[:disks]
+
           disk = self.data[:disks][name]
           if !!disk || !name
             response.status = 400
             response.body = 'diskname is invalid'
             if !!disk
-              STDERR.puts "disk already exists #{name}"
+              Fog::Logger.warning "disk already exists #{name}"
             else
-              STDERR.puts 'disk name is required'
+              Fog::Logger.warning 'disk name is required'
             end
             raise(Excon::Errors.status_error({:expects => 200}, response))
           end

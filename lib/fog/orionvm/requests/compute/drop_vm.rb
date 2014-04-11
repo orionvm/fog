@@ -13,11 +13,11 @@ module Fog
       class Mock
         def drop_vm(vm_id, options = nil)
           response = Excon::Response.new
-          puts 'deleting vm ', vm_id
+          Fog::Logger.debug('deleting vm ' + vm_id.to_s)
           if vm_id
             instance = self.data[:instances][vm_id]
             if instance
-              puts 'vm state', instance
+              Fog::Logger.debug 'vm state' + instance.to_s
               if instance['state'] == 0
                 vm = self.data[:instances].delete(vm_id)
                 disks = vm['disks']
@@ -33,12 +33,11 @@ module Fog
                   realip = self.data[:ips][ip]
                   realip['vmid'] = nil
                   realip['locked'] = false
-                  puts 'updated ip', ip, realip
                 }
                 
                 response.status = 200
                 response.body = true
-                puts 'deleted vm', vm_id
+                Fog::Logger.debug 'deleted vm' + vm_id.to_s
                 return response
               else
                 response.status = 200

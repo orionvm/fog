@@ -4,15 +4,6 @@ module Fog
   module Compute
     class OrionVM
 
-      class Numeric
-        Alph = ("a".."z").to_a
-        def alph
-          s, q = "", self
-          (q, r = (q - 1).divmod(26)) && s.prepend(Alph[r]) until q.zero?
-          s
-        end
-      end
-    
       class Volume < Fog::Model
         identity  :id, :aliases => 'name'
         attribute :name, :type => :string
@@ -26,6 +17,9 @@ module Fog
           # assign server first to prevent race condition with !persisted?
           self.server = attributes.delete(:server)
           super
+          if persisted?
+            self.name = id
+          end
         end
 
         def destroy
@@ -80,6 +74,7 @@ module Fog
           service.servers.get(server_id)
         end
 
+
         def server=(new_server, target = nil)
           if new_server
             attach(new_server, false, target)
@@ -102,7 +97,7 @@ module Fog
             if !target
               disk_count = new_server.disks.count
               if new_server.vm_type == "HVM"
-                target = "hd" + (disk_count+1).alph
+                target = "hd" + to_alph(disk_count+1)
               else
                 target = "xvda" + (disk_count+1).to_s
               end
@@ -112,13 +107,20 @@ module Fog
           end
         end
 
-        def next_device_offset
-        end
-
         def detach
           unless !persisted?
             service.detach_disk(server_id, id).body.eql?(true)
           end
+        end
+
+      
+      private
+      
+        Alph = ("a".."z").to_a
+        def to_alph(num)
+          s, q = "", num
+          (q, r = (q - 1).divmod(26)) && s.prepend(Alph[r]) until q.zero?
+          s
         end
 
       end
